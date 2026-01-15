@@ -1,0 +1,8 @@
+react
+react-dom
+react-router-dom
+lucide-react
+framer-motion
+vite
+@vitejs/plugin-react
+eslint
