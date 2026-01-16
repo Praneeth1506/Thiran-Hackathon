@@ -2,7 +2,7 @@ fastapi
 uvicorn
 langchain==0.1.16
 langchain-openai==0.0.8
-openai==0.28.1
+openai>=1.10.0
 pydantic
 python-dotenv
 pymongo
