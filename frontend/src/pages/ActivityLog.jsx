@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { History, ArrowRight, RefreshCw } from 'lucide-react';
-import storage from '../utils/storage';
+import { slaAPI } from '../utils/api';
 import '../styles/Pages.css';
 
 const ActivityLog = () => {
     const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Load logs from localStorage on mount
+    // Load SLA breaches from backend on mount
     useEffect(() => {
         loadLogs();
     }, []);
 
-    const loadLogs = () => {
-        const loadedLogs = storage.getLogs();
-        setLogs(loadedLogs);
+    const loadLogs = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await slaAPI.getBreaches();
+            setLogs(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError(err.message || 'Failed to load SLA breaches');
+            console.error('Error loading SLA breaches:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const getActionColor = (type) => {
@@ -33,8 +44,8 @@ const ActivityLog = () => {
         <div className="page-container">
             <div className="page-header">
                 <div>
-                    <h2 className="page-title">System Activity Log</h2>
-                    <p className="page-subtitle">Audit trail of all actions performed in the system.</p>
+                    <h2 className="page-title">SLA Breach</h2>
+                    <p className="page-subtitle">Service Level Agreement violations detected in the system.</p>
                 </div>
                 <div className="flex gap-3 items-center">
                     <button
@@ -51,45 +62,65 @@ const ActivityLog = () => {
                 </div>
             </div>
 
-            {logs.length > 0 ? (
+            {error && (
+                <div className="glass-morphism" style={{ padding: '1rem', marginBottom: '1rem', borderLeft: '4px solid #ef4444' }}>
+                    <p style={{ color: '#fca5a5' }}>{error}</p>
+                </div>
+            )}
+
+            {loading ? (
+                <div className="glass-morphism empty-state">
+                    <div className="empty-state-icon">⏳</div>
+                    <p className="text-lg font-semibold mb-2">Loading SLA breaches...</p>
+                </div>
+            ) : logs.length > 0 ? (
                 <div className="glass-morphism overflow-hidden">
                     <table>
                         <thead>
                             <tr>
-                                <th>Timestamp</th>
-                                <th>Action</th>
-                                <th>User</th>
-                                <th>Target</th>
-                                <th></th>
+                                <th>Department</th>
+                                <th>Issue</th>
+                                <th>Priority</th>
+                                <th>SLA Hours</th>
+                                <th>Elapsed Hours</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {logs.map((log) => (
-                                <tr key={log.id}>
+                                <tr key={log._id || log.id}>
                                     <td>
-                                        <span className="font-mono text-xs text-slate-400">
-                                            {log.timestamp}
+                                        <span className="px-2 py-1 rounded bg-slate-800 border border-white/5 uppercase text-[10px] font-bold">
+                                            {log.department || 'General'}
                                         </span>
                                     </td>
                                     <td>
-                                        <span className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${getActionColor(log.type)}`}>
-                                            {log.action}
+                                        <span className="text-slate-300">
+                                            {log.issue || 'Unknown Issue'}
                                         </span>
                                     </td>
                                     <td>
-                                        <span className="font-medium text-slate-200">
-                                            {log.user}
+                                        <span className={`px-2 py-1 rounded uppercase text-[10px] font-bold ${log.priority === 'HIGH' ? 'bg-red-900/30 border border-red-500/50 text-red-300' :
+                                            log.priority === 'MEDIUM' ? 'bg-orange-900/30 border border-orange-500/50 text-orange-300' :
+                                                'bg-blue-900/30 border border-blue-500/50 text-blue-300'
+                                            }`}>
+                                            {log.priority || 'MEDIUM'}
                                         </span>
                                     </td>
                                     <td>
-                                        <span className="text-slate-400">
-                                            {log.target}
+                                        <span className="text-slate-300 font-mono text-sm">
+                                            {log.sla_hours ? log.sla_hours.toFixed(3) : '0.000'}h
                                         </span>
                                     </td>
-                                    <td className="text-right">
-                                        <button className="action-btn opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ArrowRight size={16} />
-                                        </button>
+                                    <td>
+                                        <span className="text-amber-300 font-mono text-sm font-semibold">
+                                            {log.elapsed_hours ? log.elapsed_hours.toFixed(3) : '0.000'}h
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className="px-2 py-1 rounded bg-red-900/30 border border-red-500/50 text-red-300 text-xs font-bold">
+                                            BREACHED
+                                        </span>
                                     </td>
                                 </tr>
                             ))}
@@ -98,9 +129,9 @@ const ActivityLog = () => {
                 </div>
             ) : (
                 <div className="glass-morphism empty-state">
-                    <div className="empty-state-icon">📊</div>
-                    <p className="text-lg font-semibold mb-2">No activity logs yet</p>
-                    <p className="text-sm">Activity logs will appear here as actions are performed in the system.</p>
+                    <div className="empty-state-icon">✅</div>
+                    <p className="text-lg font-semibold mb-2">No SLA breaches detected</p>
+                    <p className="text-sm">All tasks are meeting their Service Level Agreements.</p>
                 </div>
             )}
 

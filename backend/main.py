@@ -14,6 +14,7 @@ from agents.task_lifecycle import update_task_status
 from db.mongo import complaint_collection
 from db.mongo import task_collection
 from db.mongo import task_history_collection
+from db.mongo import sla_breach_collection
 
 load_dotenv()
 
@@ -102,6 +103,12 @@ def get_activity_logs():
     return [serialize_mongo(log) for log in logs]
 
 
+@app.get("/sla-breaches")
+def get_sla_breaches():
+    breaches = sla_breach_collection.find().sort("detected_at", -1)
+    return [serialize_mongo(breach) for breach in breaches]
+
+
 @app.get("/tasks/{task_id}/activity")
 def get_task_activity(task_id: str):
     logs = task_history_collection.find(
@@ -115,4 +122,31 @@ def get_task_activity(task_id: str):
         }
         for log in logs
     ]
+
+
+@app.delete("/complaint/{complaint_id}")
+def delete_complaint(complaint_id: str):
+    try:
+        result = complaint_collection.delete_one({"_id": ObjectId(complaint_id)})
+        if result.deleted_count == 0:
+            return {"status": "error", "message": "Complaint not found"}
+        
+        # Also delete related tasks
+        task_collection.delete_many({"complaint_id": ObjectId(complaint_id)})
+        
+        return {"status": "success", "message": "Complaint and related tasks deleted"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.delete("/task/{task_id}")
+def delete_task(task_id: str):
+    try:
+        result = task_collection.delete_one({"_id": ObjectId(task_id)})
+        if result.deleted_count == 0:
+            return {"status": "error", "message": "Task not found"}
+        
+        return {"status": "success", "message": "Task deleted"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 

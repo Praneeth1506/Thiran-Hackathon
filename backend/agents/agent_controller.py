@@ -2,6 +2,7 @@ from agents.perception_agent import perception_agent
 from agents.priority_agent import priority_agent
 from agents.sla_agent import sla_agent
 from agents.coordination_agent import coordination_agent
+from agents.policies import DEPARTMENT_POLICY
 
 from db.mongo import complaint_collection, task_collection
 from datetime import datetime
@@ -60,10 +61,16 @@ def run_agent_pipeline(complaint_text: str, location: str | None):
 
 
 def create_complaint(complaint_text, location, issues, priority, confidence):
+    # Determine primary department from the first issue detected
+    primary_department = "General"
+    if issues and len(issues) > 0:
+        primary_department = DEPARTMENT_POLICY.get(issues[0], "General")
+    
     result = complaint_collection.insert_one({
         "description": complaint_text,
         "location": location,
         "issues_detected": issues,
+        "department": primary_department,
         "priority": priority,
         "confidence_score": confidence,
         "status": "IN_PROGRESS",
@@ -80,6 +87,8 @@ def save_tasks_to_db(tasks, complaint_id, complaint_text, location):
         task_collection.insert_one({
             "complaint_id": complaint_id,
             "issue": task["issue"],
+            "title": task.get("work_order_title"),
+            "description": task.get("work_order_description"),
             "department": task["department"],
             "priority": task["priority"],
             "sla_hours": extract_hours(task["sla_context"]),
