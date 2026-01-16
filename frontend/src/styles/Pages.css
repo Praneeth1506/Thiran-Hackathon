@@ -259,18 +259,28 @@ table td {
     font-size: 0.95rem;
     color: var(--text-secondary);
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    overflow: visible;
+    position: relative;
 }
 
 table tbody tr {
     transition: all 0.2s ease;
+    position: relative;
 }
 
 table tbody tr:hover {
     background: var(--glass-hover);
+    z-index: 1;
 }
 
 table tbody tr:last-child td {
     border-bottom: none;
+}
+
+/* Priority Select Styling */
+.priority-select option {
+    padding: 8px 12px;
+    font-weight: 600;
 }
 
 /* Action Buttons */

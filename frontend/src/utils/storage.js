@@ -11,6 +11,7 @@ const DEFAULT_COMPLAINTS = [
         title: 'Street Light Outage',
         department: 'Electricity',
         status: 'Pending',
+        priority: 'High',
         description: 'The light at Main St. has been off for 3 days.',
         date: '2024-01-14',
         citizen: 'John Doe'
@@ -20,6 +21,7 @@ const DEFAULT_COMPLAINTS = [
         title: 'Pothole on 5th Ave',
         department: 'Roads',
         status: 'In Progress',
+        priority: 'Critical',
         description: 'Deep pothole causing traffic issues.',
         date: '2024-01-12',
         citizen: 'Jane Smith'
@@ -80,6 +82,7 @@ export const storage = {
             id: Date.now(),
             date: new Date().toISOString().split('T')[0],
             status: 'Pending',
+            priority: complaint.priority || 'Medium',
         };
         complaints.push(newComplaint);
         storage.setComplaints(complaints);
@@ -152,6 +155,28 @@ export const storage = {
                 action: 'Status Updated',
                 user: 'Department Admin',
                 target: `${complaints[index].title} (${oldStatus} → ${newStatus})`,
+                type: 'update',
+            });
+
+            return complaints[index];
+        }
+        return null;
+    },
+
+    // Update complaint priority
+    updateComplaintPriority: (id, newPriority) => {
+        const complaints = storage.getComplaints();
+        const index = complaints.findIndex(c => c.id === id);
+        if (index !== -1) {
+            const oldPriority = complaints[index].priority || 'Medium';
+            complaints[index].priority = newPriority;
+            storage.setComplaints(complaints);
+
+            // Log the action
+            storage.addLog({
+                action: 'Priority Updated',
+                user: 'Department Admin',
+                target: `${complaints[index].title} (${oldPriority} → ${newPriority})`,
                 type: 'update',
             });
 
