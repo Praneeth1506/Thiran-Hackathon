@@ -1,0 +1,32 @@
+{
+  "rewrites": [
+    {
+      "source": "/complaints",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/complaints"
+    },
+    {
+      "source": "/tasks",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/tasks"
+    },
+    {
+      "source": "/activity-logs",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/activity-logs"
+    },
+    {
+      "source": "/sla-breaches",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/sla-breaches"
+    },
+    {
+      "source": "/task/:path*",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/task/:path*"
+    },
+    {
+      "source": "/complaint/:path*",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/complaint/:path*"
+    },
+    {
+      "source": "/agent/:path*",
+      "destination": "https://civiai-backend-production-9255.up.railway.app/agent/:path*"
+    }
+  ]
+}
