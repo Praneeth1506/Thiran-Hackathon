@@ -1,3 +1,22 @@
 # Ignore environment files
 .env
 backend/.env
+
+# Python
+**/__pycache__/
+*.pyc
+backend/venv/
+venv/
+.venv/
+
+# Environment variables
+.env*
+
+# IDEs
+.vscode/
+.idea/
+
+# Node
+node_modules/
+dist/
+build/
