@@ -15,7 +15,7 @@ client = MongoClient(
     connectTimeoutMS=5000
 )
 
-db = client["civiai"]
+db = client["complaint_system"]
 
 complaint_collection = db["complaints"]
 task_collection = db["tasks"]
