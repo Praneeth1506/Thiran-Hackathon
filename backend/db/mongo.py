@@ -1,13 +1,21 @@
-from pymongo import MongoClient
 import os
+from pymongo import MongoClient
 from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGODB_URI = os.getenv("MONGODB_URI")
 
-client = MongoClient(MONGO_URI)
-db = client["complaint_system"]
+if not MONGODB_URI:
+    raise RuntimeError("MONGODB_URI is not set")
+
+client = MongoClient(
+    MONGODB_URI,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000
+)
+
+db = client["civiai"]
 
 complaint_collection = db["complaints"]
 task_collection = db["tasks"]
